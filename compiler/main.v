@@ -148,11 +148,11 @@ fn main() {
 	// u := os.file_last_mod_unix('v')
 	// If there's no tmp path with current version yet, the user must be using a pre-built package
 	// Copy the `vlib` directory to the tmp path.
-/* 
+	/* 
 	// TODO 
 	if !os.file_exists(TmpPath) && os.file_exists('vlib') {
 	}
-*/ 
+	*/
 	// Just fmt and exit
 	if 'fmt' in args { 
 		file := args.last()
@@ -754,19 +754,22 @@ fn (v mut V) cc() {
 	}
 	// -I flags
 	/* 
-mut args := '' 
+	mut args := '' 
 	for flag in v.table.flags {
 		if !flag.starts_with('-l') {
 			args += flag
 			args += ' '
 		}
 	}
-*/
+	*/
 	if v.pref.sanitize {
 		a << '-fsanitize=leak'
 	}
 	// Cross compiling linux
-	sysroot := '/Users/alex/tmp/lld/linuxroot/'
+	mut sysroot := '/'
+	if !linux_host {
+		sysroot = '/Users/alex/tmp/lld/linuxroot/'
+	}
 	if v.os == .linux && !linux_host {
 		// Build file.o
 		a << '-c --sysroot=$sysroot -target x86_64-linux-gnu'
@@ -812,6 +815,11 @@ mut args := ''
 	}
 	// Find clang executable
 	//fast_clang := '/usr/local/Cellar/llvm/8.0.0/bin/clang'
+	mut clang_exec_path := '/usr/bin'
+	if !linux_host {
+		clang_exec_path = '/usr/local/Cellar/llvm/8.0.0/bin'
+	}
+	fast_clang := clang_exec_path + '/clang'
 	args := a.join(' ')
 	//mut cmd := if os.file_exists(fast_clang) {
 	//'$fast_clang $args'
@@ -819,6 +827,10 @@ mut args := ''
 	//else {
 	mut cmd := 'cc $args'
 	//}
+	centos_cmd := 'cat /etc/redhat-release | awk \'{print $1}\''
+	if os.exec(centos_cmd) == 'CentOS' {
+		cmd = '$fast_clang $args'
+	}
 	$if windows {
 		cmd = 'gcc $args' 
 	}
@@ -850,11 +862,15 @@ mut args := ''
 			'Please create a GitHub issue: https://github.com/vlang/v/issues/new/choose')
 	}
 	// Link it if we are cross compiling and need an executable
+	mut lld := clang_exec_path + '/ld'
+	if !linux_host {
+		lld = clang_exec_path + '/ld.lld'
+	}
 	if v.os == .linux && !linux_host && v.pref.build_mode != .build {
 		v.out_name = v.out_name.replace('.o', '')
 		obj_file := v.out_name + '.o'
 		println('linux obj_file=$obj_file out_name=$v.out_name')
-		ress := os.exec('/usr/local/Cellar/llvm/8.0.0/bin/ld.lld --sysroot=$sysroot ' +
+		ress := os.exec('$lld --sysroot=$sysroot ' +
 		'-v -o $v.out_name ' +
 		'-m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 ' +
 		'/usr/lib/x86_64-linux-gnu/crt1.o ' +

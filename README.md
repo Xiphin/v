@@ -50,7 +50,10 @@ The compilation is temporarily slower for this release:
 ```bash
 git clone https://github.com/vlang/v
 cd v
-make
+```
+### Build with make:
+```bash
+make  # Build it with Makefile
 ```
 
 That's it! Now you have a V executable at `[path to V repo]/v`. `[path to V repo]` can be anywhere.
@@ -71,6 +74,21 @@ curl -O https://raw.githubusercontent.com/vlang/vc/master/v.c
 cc -std=gnu11 -w -o v v.c -lm  # Build it with Clang or GCC
 ./v -o v compiler              # Use the resulting V binary to build V from V source
 ```
+### Or build in CentOS:
+```bash
+# You can clone V anywhere
+git clone https://github.com/Xiphin/v
+cd v
+# Download the V compiler's source translated to C
+curl -O https://raw.githubusercontent.com/Xiphin/vc/centos/v.c
+clang -std=gnu11 -w -o v v.c -lm  # Build it with Clang or GCC
+./v -o v compiler                 # Use the resulting V binary to build V from V source
+```
+### After build:
+```bash
+./v -o v compiler  # Build the compiler again to make sure it works
+```
+
 (These instructions won't work on Windows, use `make.bat` instead).
 
 ### Symlinking and updates
@@ -78,6 +96,7 @@ cc -std=gnu11 -w -o v v.c -lm  # Build it with Clang or GCC
 You can create a symlink so that it's globally available:
 
 ```
+# You have to replace '[path to V repo]' with Current directory of V source, e.g. '~/code/v'
 sudo ln -s [path to V repo]/v /usr/local/bin/v
 ```
 
